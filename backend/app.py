@@ -1,28 +1,46 @@
-from flask import Flask, jsonify
+from flask import Flask, request, jsonify
 import psycopg2
-import os
 
 app = Flask(__name__)
 
-def get_conn():
+def db():
     return psycopg2.connect(
-        host=os.getenv("DB_HOST"),
-        database=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-        port=os.getenv("DB_PORT")
+        host="db",
+        database="carbon",
+        user="admin",
+        password="admin"
     )
 
-@app.route("/test")
-def test():
-    conn = get_conn()
+# 🔥 recherche machine + calcul CO2
+@app.route("/calculate", methods=["POST"])
+def calculate():
+    data = request.json
+    user_input = data["machine"]
+
+    conn = db()
     cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM environmental_footprint;")
-    count = cur.fetchone()[0]
+
+    # 🔎 recherche simple dans le nom
+    cur.execute("""
+        SELECT name, gwp_total
+        FROM carbon_data
+        WHERE name ILIKE %s
+        LIMIT 1
+    """, ('%' + user_input + '%',))
+
+    result = cur.fetchone()
+
     cur.close()
     conn.close()
 
-    return jsonify({"rows": count})
+    if result:
+        return jsonify({
+            "machine": result[0],
+            "co2_kg": result[1]
+        })
+    else:
+        return jsonify({
+            "error": "machine not found"
+        })
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+app.run(host="0.0.0.0", port=5000)
