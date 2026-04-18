@@ -1,7 +1,124 @@
-<h1>Carbon Footprint Calculator</h1>
+<div class="page">
+  <header class="hero">
+    <p class="hero-badge">Climat · Numérique responsable</p>
+    <h1 class="hero-title">Empreinte carbone de ton équipement</h1>
+    <p class="hero-lead">
+      Le <strong>GWP</strong> (en <strong>kg CO₂e</strong>) indique combien ce produit contribue au
+      <strong>réchauffement climatique</strong> sur son cycle de vie — donc à la dégradation du milieu naturel.
+    </p>
+  </header>
 
-<input [(ngModel)]="machine" placeholder="Enter your machine">
+  <section class="panel climate-panel" aria-labelledby="climate-title">
+    <h2 id="climate-title" class="climate-title">Le même réchauffement que mesurent tes kilogrammes de CO₂e</h2>
+    <p class="climate-lead">
+      Le GWP d’un équipement, c’est une fraction des gaz à effet de serre qui s’accumulent déjà dans l’atmosphère — la
+      même dynamique que la fonte des glaces, les sécheresses, les crues, les orages violents ou les feux de forêt qui
+      s’étendent sur plusieurs continents.
+    </p>
+    <div class="climate-grid" role="list">
+      @for (img of climateImages; track img.src) {
+        <figure class="climate-card" role="listitem">
+          <div class="climate-img-wrap">
+            <img
+              [src]="img.src"
+              [alt]="img.alt"
+              class="climate-img"
+              width="800"
+              height="520"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <figcaption class="climate-caption">{{ img.caption }}</figcaption>
+        </figure>
+      }
+    </div>
+  </section>
 
-<button (click)="calculate()">Calculate</button>
+  <section class="panel search-panel" aria-labelledby="search-label">
+    <label id="search-label" class="sr-only" for="machine-input">Recherche machine</label>
+    <form class="search-form" (ngSubmit)="calculate()">
+      <div class="input-wrap">
+        <span class="input-icon" aria-hidden="true">⌕</span>
+        <input
+          id="machine-input"
+          name="machine"
+          type="search"
+          [(ngModel)]="machine"
+          placeholder="Ex. MacBook Air M1, Latitude 7410, Dell monitor…"
+          autocomplete="off"
+          [disabled]="loading"
+        />
+        <button type="submit" class="btn-primary" [disabled]="loading">
+          @if (loading) {
+            <span class="btn-spinner" aria-hidden="true"></span>
+            <span>Analyse…</span>
+          } @else {
+            <span>Voir l’empreinte & le détail</span>
+          }
+        </button>
+      </div>
+    </form>
 
-<pre>{{ result | json }}</pre>
+    <p class="suggestions-label">Essayer vite :</p>
+    <div class="chips" role="group" aria-label="Suggestions">
+      @for (s of suggestions; track s) {
+        <button type="button" class="chip" (click)="pickSuggestion(s)" [disabled]="loading">
+          {{ s }}
+        </button>
+      }
+    </div>
+  </section>
+
+  @if (apiError) {
+    <div class="panel alert" role="alert">
+      {{ apiError }}
+    </div>
+  }
+
+  @if (item) {
+    <section class="result-stack" aria-live="polite">
+      <article class="panel result-card">
+        <p class="result-label">Équipement identifié</p>
+        <h2 class="result-machine">{{ displayTitle }}</h2>
+
+        <div class="result-single">
+          <p class="dataset-badge">Données Boavizta · France</p>
+          <p class="region-name">{{ item.name }}</p>
+          <div class="co2-block co2-block-compact">
+            <span class="co2-value co2-value-sm">{{ co2Kg() | number : '1.0-0' }}</span>
+            <span class="co2-unit">kg CO₂e</span>
+            <p class="co2-caption">GWP total (réchauffement climatique)</p>
+          </div>
+
+          <div class="detail-wrap">
+            <h3 class="detail-heading">Détail issu de la base</h3>
+            <dl class="detail-list">
+              @for (row of detailRows(); track row.label + row.value) {
+                <div class="detail-row">
+                  <dt>{{ row.label }}</dt>
+                  <dd>{{ row.value }}</dd>
+                </div>
+              }
+            </dl>
+            @if (item.sources) {
+              <p class="source-line">
+                <a
+                  class="source-link"
+                  [href]="item.sources"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Rapport / source fabricant (PDF ou page externe)</a
+                >
+              </p>
+            }
+          </div>
+        </div>
+      </article>
+    </section>
+  }
+
+  <footer class="footer">
+    <span>Boavizta · API Flask · Angular</span>
+  </footer>
+</div>

@@ -1,1 +1,48 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&display=swap');
+
+:root {
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --bg: #f0faf4;
+  --bg-2: #e2f4eb;
+  --text: #0f172a;
+  --text-muted: #475569;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --border: rgba(15, 118, 110, 0.18);
+  --accent: #0d9488;
+  --accent-2: #059669;
+  --accent-soft: #0f766e;
+  --accent-dim: rgba(13, 148, 136, 0.12);
+  --accent-glow: rgba(13, 148, 136, 0.25);
+  --warn-bg: #fff1f2;
+  --warn-border: #fecdd3;
+  --warn-text: #9f1239;
+  --radius: 1rem;
+  --shadow: 0 8px 30px rgba(15, 118, 110, 0.08);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--text);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 90% 60% at 50% -15%, rgba(167, 243, 208, 0.65), transparent 50%),
+    radial-gradient(ellipse 70% 50% at 100% 20%, rgba(204, 251, 241, 0.9), transparent 45%),
+    radial-gradient(ellipse 55% 45% at 0% 90%, rgba(209, 250, 229, 0.85), transparent 50%),
+    linear-gradient(180deg, #f8fffc 0%, var(--bg) 38%, var(--bg-2) 100%);
+  background-attachment: fixed;
+}

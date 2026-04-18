@@ -33,7 +33,7 @@ services:
       DB_HOST: db
       DB_NAME: environmental_db
       DB_USER: postgres
-      DB_PASSWORD: postgres
+      DB_PASSWORD: 1234
       DB_PORT: 5432
 
 
@@ -47,3 +47,12 @@ services:
 
     depends_on:
       - backend
+
+    command: ["npx", "ng", "serve", "--host", "0.0.0.0", "--port", "4200", "--poll", "2000"]
+
+    # Code source depuis l’hôte : plus besoin de rebuild à chaque edit (node_modules restent dans l’image).
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/angular.json:/app/angular.json
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+      - ./frontend/tsconfig.app.json:/app/tsconfig.app.json
