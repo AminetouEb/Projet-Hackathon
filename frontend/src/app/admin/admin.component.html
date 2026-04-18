@@ -1,0 +1,123 @@
+<div class="admin-page">
+  <header class="admin-header">
+    <div>
+      <p class="admin-kicker">Simulation démo · non sécurisé production</p>
+      <h1 class="admin-title">Load Balancer Dashboard</h1>
+      <p class="admin-sub">
+        Couches <strong>vSphere</strong> (VM) et <strong>Docker</strong> (conteneurs) — état entièrement mocké, sans
+        appel backend réel.
+      </p>
+    </div>
+    <a routerLink="/" class="admin-back">← Empreinte CO₂</a>
+  </header>
+
+  @if (error) {
+    <div class="admin-alert" role="alert">{{ error }}</div>
+  }
+
+  @if (loading && !status) {
+    <p class="admin-muted">Chargement de l’état simulé…</p>
+  }
+
+  @if (status) {
+    <section class="admin-toolbar">
+      <button type="button" class="admin-btn-primary" (click)="simulateTick()" [disabled]="tickLoading">
+        @if (tickLoading) {
+          <span>Tick en cours…</span>
+        } @else {
+          <span>Simulate Load Balancer Tick</span>
+        }
+      </button>
+      <button type="button" class="admin-btn-ghost" (click)="refresh()" [disabled]="loading || tickLoading">
+        Recharger l’état
+      </button>
+    </section>
+
+    <section class="admin-grid-kpi">
+      <div class="admin-card kpi">
+        <span class="kpi-label">Requests / min (simulé)</span>
+        <span class="kpi-value">{{ status.requests_per_minute }}</span>
+      </div>
+      <div class="admin-card kpi">
+        <span class="kpi-label">Active apps</span>
+        <span class="kpi-value">{{ status.active_apps }}</span>
+      </div>
+      <div class="admin-card kpi kpi-wide">
+        <span class="kpi-label">Décision orchestrateur</span>
+        <span [class]="decisionClass(status)">{{ decisionMessage(status) }}</span>
+        <p class="kpi-hint">
+          Si req/min &gt; 2 → <strong>Scaling UP</strong> · si une VM a ≥ {{ maxPerVm }} conteneurs →
+          <strong>Need new VM</strong> · sinon <strong>Stable</strong>.
+        </p>
+      </div>
+    </section>
+
+    <div class="admin-columns">
+      <section class="admin-card block">
+        <h2 class="block-title">🖥️ Virtual Machines (vSphere)</h2>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>vm_id</th>
+                <th>Status</th>
+                <th>Containers</th>
+                <th>CPU %</th>
+                <th>RAM %</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (vm of status.vms; track vm.id) {
+                <tr>
+                  <td><code>{{ vm.id }}</code></td>
+                  <td>
+                    <span class="vm-badge" [class.vm-running]="vm.status === 'running'" [class.vm-suspended]="vm.status === 'suspended'" [class.vm-stopped]="vm.status === 'stopped'">
+                      {{ vmStatusLabel(vm) }}
+                    </span>
+                  </td>
+                  <td>{{ vm.containers }}</td>
+                  <td>
+                    <div class="meter"><span class="meter-fill" [style.width.%]="vm.cpu"></span></div>
+                    {{ vm.cpu }}%
+                  </td>
+                  <td>
+                    <div class="meter"><span class="meter-fill meter-fill--ram" [style.width.%]="vm.ram"></span></div>
+                    {{ vm.ram }}%
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="admin-card block">
+        <h2 class="block-title">📦 Containers (Docker)</h2>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>container_id</th>
+                <th>App type</th>
+                <th>Status</th>
+                <th>VM</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of status.containers; track c.id) {
+                <tr>
+                  <td><code>{{ c.id }}</code></td>
+                  <td>{{ c.type }}</td>
+                  <td>
+                    <span class="ct-badge" [class.ct-run]="c.status === 'running'">{{ c.status }}</span>
+                  </td>
+                  <td><code>{{ c.vm }}</code></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  }
+</div>

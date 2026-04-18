@@ -323,9 +323,23 @@
 
 .footer {
   margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
   text-align: center;
   font-size: 0.75rem;
   color: var(--text-muted);
+}
+
+.footer-admin-link {
+  font-weight: 600;
+  color: var(--accent-soft);
+  text-decoration: none;
+}
+
+.footer-admin-link:hover {
+  text-decoration: underline;
 }
 
 /* Bloc climat — tons clairs */

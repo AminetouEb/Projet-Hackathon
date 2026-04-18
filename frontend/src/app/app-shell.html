@@ -1,0 +1,10 @@
+<header class="app-shell-nav">
+  <a routerLink="/" class="app-shell-brand">Empreinte CO₂</a>
+  <nav class="app-shell-links" aria-label="Navigation principale">
+    <a routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }">Accueil</a>
+    <a routerLink="/admin" routerLinkActive="is-active">Admin · Load balancer</a>
+  </nav>
+</header>
+<main class="app-shell-main">
+  <router-outlet />
+</main>
