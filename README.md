@@ -44,14 +44,19 @@ Puis ouvrir [http://localhost:4200](http://localhost:4200) (frontend) et verifie
 **Pourquoi pas `docker compose up` seul ?**  
 Le fichier `docker-compose.yml` lance `ng serve` sur une image construite a partir du `frontend/Dockerfile` dont l'image finale est **Nginx** (sans Node). Ce chemin peut echouer au demarrage du conteneur frontend. Le fichier `docker-compose.dev.yml` evite ce probleme.
 
-**Deploiement type prod (images pre-publiees)** :
+**Deploiement type prod (VM, images sur Docker Hub)** :
+
+Sur la machine virtuelle, une seule commande suffit en general : Compose telecharge automatiquement les images `backend` et `frontend` si elles ne sont pas encore presentes localement.
 
 ```bash
-docker compose -f docker-compose.prod.yml pull
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-(Depend de la disponibilite des images sur le registry reference dans `docker-compose.prod.yml`.)
+Pour forcer le re-telechargement des dernieres versions (meme si une ancienne image est en cache) :
+
+```bash
+docker compose -f docker-compose.prod.yml pull && docker compose -f docker-compose.prod.yml up -d
+```
 
 ## Lancer le projet (autres chemins)
 
