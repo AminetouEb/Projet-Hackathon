@@ -1,0 +1,72 @@
+# Déploiement hybride (VM) : images backend / frontend depuis le registry,
+# + sur l’hôte uniquement ce dossier et ce fichier : database/, docker-compose.prod.yml
+#
+# Sur la VM :
+#   git clone --depth 1 --sparse ...  (ou copier database/ + ce fichier)
+#   docker compose -f docker-compose.prod.yml pull
+#   docker compose -f docker-compose.prod.yml up -d
+#
+# Publier les images (depuis le dépôt complet) :
+#   docker build -t aminetou01/backend:1.0 ./backend
+#   docker build -f frontend/Dockerfile.prod -t aminetou01/frontend:1.0 ./frontend
+
+services:
+  # Données en RAM (tmpfs) : base reconstruite à chaque nouveau conteneur db.
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+
+    environment:
+      POSTGRES_DB: environmental_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+
+    ports:
+      - "5432:5432"
+
+    tmpfs:
+      - /var/lib/postgresql/data:size=1g
+
+    shm_size: 256mb
+
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./database/data:/data:ro
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
+
+  backend:
+    image: aminetou01/backend:1.0
+    container_name: backend_api
+    restart: always
+
+    ports:
+      - "5000:5000"
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    environment:
+      DB_HOST: db
+      DB_NAME: environmental_db
+      DB_USER: app_readonly
+      DB_PASSWORD: 1234
+      DB_PORT: 5432
+
+  frontend:
+    image: aminetou01/frontend:1.0
+    container_name: frontend_app
+    restart: always
+
+    ports:
+      - "4200:80"
+
+    depends_on:
+      - backend
