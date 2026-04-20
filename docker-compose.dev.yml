@@ -1,0 +1,68 @@
+services:
+
+  db:
+    image: postgres:15
+    container_name: postgres_db_dev
+    restart: always
+
+    environment:
+      POSTGRES_DB: environmental_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+
+    ports:
+      - "5432:5432"
+
+    tmpfs:
+      - /var/lib/postgresql/data:size=1g
+
+    shm_size: 256mb
+
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./database/data:/data:ro
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
+
+  backend:
+    build: ./backend
+    container_name: backend_api_dev
+    restart: always
+
+    ports:
+      - "5000:5000"
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    environment:
+      DB_HOST: db
+      DB_NAME: environmental_db
+      DB_USER: app_readonly
+      DB_PASSWORD: 1234
+      DB_PORT: 5432
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: frontend_app_dev
+    restart: always
+
+    ports:
+      - "4200:4200"
+
+    depends_on:
+      - backend
+
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+    command: ["npm", "run", "start", "--", "--host", "0.0.0.0", "--port", "4200", "--poll", "2000"]
