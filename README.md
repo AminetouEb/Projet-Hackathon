@@ -13,7 +13,10 @@ Application web qui estime l'empreinte carbone (CO2e) d'un equipement informatiq
 - `frontend/` : application Angular (interface utilisateur).
 - `backend/` : API Flask (recherche en base, normalisation JSON).
 - `database/` : script SQL d'initialisation + fichiers CSV de reference.
-- `docker-compose.yml` : orchestration complete (PostgreSQL + backend + frontend).
+- `docker-compose.yml` : compose historique (voir section jury : preferer `docker-compose.dev.yml` pour une demo locale fiable).
+- `docker-compose.dev.yml` : **demo locale** (Angular en dev + backend + Postgres).
+- `docker-compose.prod.yml` : deploiement avec images Nginx + registry.
+- `Hackathon-Scripts/` et `Presentation_Groupe4.pdf` : **livrables demandes par le jury** (conserver dans le depot).
 
 Flux principal :
 1. L'utilisateur saisit un modele dans le frontend.
@@ -28,17 +31,32 @@ Flux principal :
 - Port `5000` libre (backend)
 - Port `5432` libre (PostgreSQL)
 
-## Lancer le projet (recommande)
+## Demarrage pour le jury (a suivre en priorite)
 
-Depuis la racine du projet :
+Pour evaluer l'application **sans ambiguite**, utiliser le compose **dev** dedie :
 
 ```bash
-docker compose up --build
+docker compose -f docker-compose.dev.yml up --build
 ```
 
-Acces :
-- Frontend : [http://localhost:4200](http://localhost:4200)
-- API backend : [http://localhost:5000/calculate](http://localhost:5000/calculate)
+Puis ouvrir [http://localhost:4200](http://localhost:4200) (frontend) et verifier l'API sur [http://localhost:5000/calculate](http://localhost:5000/calculate) (POST JSON).
+
+**Pourquoi pas `docker compose up` seul ?**  
+Le fichier `docker-compose.yml` lance `ng serve` sur une image construite a partir du `frontend/Dockerfile` dont l'image finale est **Nginx** (sans Node). Ce chemin peut echouer au demarrage du conteneur frontend. Le fichier `docker-compose.dev.yml` evite ce probleme.
+
+**Deploiement type prod (images pre-publiees)** :
+
+```bash
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
+```
+
+(Depend de la disponibilite des images sur le registry reference dans `docker-compose.prod.yml`.)
+
+## Lancer le projet (autres chemins)
+
+- Demo locale fiable : voir section **Demarrage pour le jury** ci-dessus.
+- Le fichier `docker-compose.yml` seul est conserve pour compatibilite ; en cas de souci sur le service `frontend`, preferer `docker-compose.dev.yml`.
 
 Exemple d'appel API :
 
@@ -70,7 +88,7 @@ curl -X POST http://localhost:5000/calculate \
 
 ## Comment un evaluateur peut tester rapidement
 
-1. Lancer `docker compose up --build`.
+1. Lancer `docker compose -f docker-compose.dev.yml up --build`.
 2. Ouvrir `http://localhost:4200`.
 3. Tester une recherche, par exemple :
    - `Latitude 7410`
@@ -101,3 +119,18 @@ L'objectif est qu'une personne qui n'a pas code le projet puisse :
 - comprendre le flux en quelques minutes,
 - localiser rapidement la logique metier,
 - et faire evoluer l'application sans ambiguites.
+
+## Git : push depuis Windows
+
+Si Git affiche *dubious ownership* sur `C:/project`, ajouter une exception (une fois par machine) :
+
+```bash
+git config --global --add safe.directory C:/project
+```
+
+Ou corriger le proprietaire du dossier `.git` pour qu'il corresponde a ton utilisateur Windows.
+
+## Ne pas versionner l'environnement Python local
+
+Le dossier `.venv/` (racine) est ignore par `.gitignore` : ne pas le committer (trop lourd, specifique a chaque machine).  
+Si `.venv` etait deja suivi par Git : `git rm -r --cached .venv` puis commit.
